@@ -10,6 +10,8 @@ from sklearn.model_selection import train_test_split
 
 import torchaudio
 import torchaudio.transforms as T
+
+from tqdm import tqdm
 # -----------配置---------
 
 # -------- CBAM Block ----------
@@ -41,7 +43,7 @@ class CBAMLayer(nn.Module):
         spatial_attn=self.sigmoid_spatial(self.conv_spatial(torch.cat([avg_out,max_out],dim=1)))
         x=x*spatial_attn
         return x
-DATA_DIR = r'Mood2Voice\speech-emotion-recognition-ravdess-data'
+DATA_DIR = r'speech-emotion-recognition-ravdess-data'
 SAMPLE_RATE = 16000
 N_FFT = 1024
 HOP_LENGTH = 256
@@ -214,7 +216,7 @@ def train_one_epoch(model, loader, criterion, optimizer, device):
     total_correct = 0
     total_num = 0
 
-    for mel, label in loader:
+    for mel, label in tqdm(loader, desc="Train", leave=False):
         mel = mel.to(device)      # (B, 1, N_MELS, FIXED_T)
         label = label.to(device)
 
@@ -241,7 +243,8 @@ def eval_one_epoch(model, loader, criterion, device):
     total_num = 0
 
     with torch.no_grad():
-        for mel, label in loader:
+        # 同样用 tqdm
+        for mel, label in tqdm(loader, desc="Val  ", leave=False):
             mel = mel.to(device)
             label = label.to(device)
 
